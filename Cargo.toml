@@ -1,0 +1,23 @@
+[package]
+name = "huffman"
+version = "0.1.0"
+authors = ["Arturo"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+algorithm = {path ="./algorithm"}
+clap = "2.33"
+
+[profile.bench]
+debug = true
+lto = true
+codegen-units = 1
+
+[workspace]
+members = ["bench", "algorithm"]
+[profile.release]
+lto = true
+codegen-units = 1
+panic = "abort"

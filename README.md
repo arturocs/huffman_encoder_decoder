@@ -1,1 +1,6 @@
-huffman_encoder_decoder
+# Huffman encoder/decoder
+
+
+
+Toy huffman encoder / decoder made in Rust.
+
