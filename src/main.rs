@@ -10,7 +10,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             (@arg decompress: -d --decompress "Decompress a file")
         )
         (@arg INPUT: +required "Sets the input file to use")
-        (@arg OUTPUT: +required "Sets the input file to use")
+        (@arg OUTPUT: +required "Sets the output file to use")
 
     )
     .setting(AppSettings::ArgRequiredElseHelp)
