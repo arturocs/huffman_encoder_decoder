@@ -1,7 +1,7 @@
+use anyhow::{Context, Result};
 use bitvec::prelude::*;
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
-use std::error::Error;
 use std::{
     cmp::Ordering,
     collections::{BTreeMap, BinaryHeap},
@@ -19,12 +19,12 @@ impl CompressedFile {
     fn new(tree: Box<Node>, bitstream: BitVec) -> Self {
         Self { tree, bitstream }
     }
-    fn decompress(&self) -> Result<Vec<u8>, Box<dyn Error>> {
+    fn decompress(&self) -> Result<Vec<u8>> {
         self.tree.decode_bytes(&self.bitstream)
     }
 }
 
-pub fn compress_file(input_path: &str, output_path: &str) -> Result<(), Box<dyn Error>> {
+pub fn compress_file(input_path: &str, output_path: &str) -> Result<()> {
     let mut input_file = File::open(input_path)?;
     let mut file_content = Vec::<u8>::new();
     input_file.read_to_end(&mut file_content)?;
@@ -35,7 +35,7 @@ pub fn compress_file(input_path: &str, output_path: &str) -> Result<(), Box<dyn 
     Ok(())
 }
 
-pub fn decompress_file(input_path: &str, output_path: &str) -> Result<(), Box<dyn Error>> {
+pub fn decompress_file(input_path: &str, output_path: &str) -> Result<()> {
     let mut input_file = File::open(input_path)?;
     let mut file_content = Vec::<u8>::new();
     input_file.read_to_end(&mut file_content)?;
@@ -46,14 +46,14 @@ pub fn decompress_file(input_path: &str, output_path: &str) -> Result<(), Box<dy
     Ok(())
 }
 
-pub fn compress_bytes(s: &[u8]) -> Result<Vec<u8>, Box<dyn Error>> {
-    let tree = generate_huffman_tree(s).ok_or("Unable to generate tree")?;
+pub fn compress_bytes(s: &[u8]) -> Result<Vec<u8>> {
+    let tree = generate_huffman_tree(s).context("Unable to generate tree")?;
     let table = tree.generate_code_table();
-    let comp = table.encode_bytes(s).ok_or("Unable to encode bytes")?;
+    let comp = table.encode_bytes(s).context("Unable to encode bytes")?;
     Ok(bincode::serialize(&CompressedFile::new(tree, comp))?)
 }
 
-pub fn decompress_bytes(arr: &[u8]) -> Result<Vec<u8>, Box<dyn Error>> {
+pub fn decompress_bytes(arr: &[u8]) -> Result<Vec<u8>> {
     let comp: CompressedFile = bincode::deserialize(&arr[..])?;
     comp.decompress()
 }
@@ -143,15 +143,15 @@ impl Node {
         generete_codes(self, &mut codes, BitVec::new());
         codes
     }
-    pub fn decode_bytes(&self, bits: &BitSlice) -> Result<Vec<u8>, Box<dyn Error>> {
+    pub fn decode_bytes(&self, bits: &BitSlice) -> Result<Vec<u8>> {
         let err_msg = "Unable to decode bytes";
         let mut current = self;
         let mut res = Vec::with_capacity(bits.len());
         for bit in bits {
             if *bit {
-                current = current.right.as_ref().ok_or(err_msg)?.as_ref();
+                current = current.right.as_ref().context(err_msg)?.as_ref();
             } else {
-                current = current.left.as_ref().ok_or(err_msg)?.as_ref();
+                current = current.left.as_ref().context(err_msg)?.as_ref();
             }
             if let Some(byte) = current.byte {
                 current = self;
