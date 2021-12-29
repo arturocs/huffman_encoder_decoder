@@ -1,6 +1,7 @@
 use anyhow::{Context, Result};
 use bitvec::prelude::*;
 use rayon::prelude::*;
+use rustc_hash::FxHashMap;
 use serde::{Deserialize, Serialize};
 use std::{
     cmp::Ordering,
@@ -59,11 +60,11 @@ pub fn decompress_bytes(arr: &[u8]) -> Result<Vec<u8>> {
 }
 
 #[derive(Debug, Clone)]
-pub struct CodeTable(BTreeMap<u8, BitVec>);
+pub struct CodeTable(FxHashMap<u8, BitVec>);
 
 impl CodeTable {
     fn new() -> Self {
-        Self(BTreeMap::new())
+        Self(FxHashMap::default())
     }
     pub fn encode_bytes(&self, s: &[u8]) -> Option<BitVec> {
         s.par_iter()
