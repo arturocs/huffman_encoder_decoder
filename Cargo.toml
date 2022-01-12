@@ -8,7 +8,7 @@ edition = "2018"
 
 [dependencies]
 algorithm = {path ="./algorithm"}
-clap = "2.33"
+clap = "3.0.6"
 
 [profile.bench]
 debug = true
