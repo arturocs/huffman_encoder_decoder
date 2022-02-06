@@ -149,11 +149,11 @@ impl Node {
         let mut current = self;
         let mut res = Vec::with_capacity(bits.len());
         for bit in bits {
-            if *bit {
-                current = current.right.as_ref().context(err_msg)?.as_ref();
+            current = if *bit {
+                current.right.as_ref().context(err_msg)?.as_ref()
             } else {
-                current = current.left.as_ref().context(err_msg)?.as_ref();
-            }
+                current.left.as_ref().context(err_msg)?.as_ref()
+            };
             if let Some(byte) = current.byte {
                 current = self;
                 res.push(byte);
@@ -163,12 +163,13 @@ impl Node {
     }
 }
 
-pub fn generate_huffman_tree(input: &[u8]) -> Option<Box<Node>> {
-    let mut frequencies = BTreeMap::new();
-    for i in input {
-        *frequencies.entry(i).or_insert(0) += 1;
-    }
-    let mut frequencies: BinaryHeap<_> = frequencies
+pub fn generate_huffman_tree(input: &[u8]) -> Option<Node> {
+    let mut frequencies: BinaryHeap<_> = input
+        .iter()
+        .fold(BTreeMap::new(), |mut acc, i| {
+            *acc.entry(i).or_insert(0) += 1;
+            acc
+        })
         .into_iter()
         .map(|(&c, i)| Node::new(i, c))
         .collect();
