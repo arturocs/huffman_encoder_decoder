@@ -67,25 +67,23 @@ impl CodeTable {
         Self(FxHashMap::default())
     }
     pub fn encode_bytes(&self, s: &[u8]) -> Option<BitVec> {
+        let identity = || Some(BitVec::with_capacity(s.len()));
+        let fold_fn = |acc: Option<BitVec>, c| {
+            acc.map(|mut a| {
+                a.extend_from_bitslice(self.0.get(c)?);
+                Some(a)
+            })?
+            
+        };
+        let reduction_fn = |acc: Option<BitVec>, c: Option<BitVec>| {
+            acc.map(|mut a| {
+                a.extend_from_bitslice(&c?);
+                Some(a)
+            })?
+        };
         s.par_iter()
-            .fold(
-                || Some(BitVec::with_capacity(s.len())),
-                |acc, c| {
-                    acc.map(|mut a| {
-                        a.extend_from_bitslice(self.0.get(c)?);
-                        Some(a)
-                    })?
-                },
-            )
-            .reduce(
-                || Some(BitVec::with_capacity(s.len())),
-                |acc, c| {
-                    acc.map(|mut a| {
-                        a.extend_from_bitslice(&c?);
-                        Some(a)
-                    })?
-                },
-            )
+            .fold(identity, fold_fn)
+            .reduce(identity, reduction_fn)
     }
 }
 
