@@ -12,12 +12,12 @@ use std::{
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CompressedFile {
-    tree: Box<Node>,
+    tree: Node,
     bitstream: BitVec,
 }
 
 impl CompressedFile {
-    fn new(tree: Box<Node>, bitstream: BitVec) -> Self {
+    fn new(tree: Node, bitstream: BitVec) -> Self {
         Self { tree, bitstream }
     }
     fn decompress(&self) -> Result<Vec<u8>> {
@@ -104,22 +104,22 @@ impl PartialOrd for Node {
 }
 
 impl Node {
-    fn new(frequency: u64, b: u8) -> Box<Node> {
-        Box::new(Node {
+    fn new(frequency: u64, b: u8) -> Node {
+        Node {
             frequency,
             byte: Some(b),
             left: None,
             right: None,
-        })
+        }
     }
 
-    fn with_leafs(frequency: u64, left: Box<Node>, right: Box<Node>) -> Box<Node> {
-        Box::new(Node {
+    fn with_leafs(frequency: u64, left: Node, right: Node) -> Node {
+        Node {
             frequency,
             byte: None,
-            left: Some(left),
-            right: Some(right),
-        })
+            left: Some(Box::new(left)),
+            right: Some(Box::new(right)),
+        }
     }
 
     pub fn generate_code_table(&self) -> CodeTable {
