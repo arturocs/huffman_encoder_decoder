@@ -51,11 +51,11 @@ pub fn compress_bytes(s: &[u8]) -> Result<Vec<u8>> {
     let tree = generate_huffman_tree(s).context("Unable to generate tree")?;
     let table = tree.generate_code_table();
     let comp = table.encode_bytes(s).context("Unable to encode bytes")?;
-    Ok(bincode::serialize(&CompressedFile::new(tree, comp))?)
+    Ok(bitcode::serialize(&CompressedFile::new(tree, comp))?)
 }
 
 pub fn decompress_bytes(arr: &[u8]) -> Result<Vec<u8>> {
-    let comp: CompressedFile = bincode::deserialize(&arr[..])?;
+    let comp: CompressedFile = bitcode::deserialize(&arr[..])?;
     comp.decompress()
 }
 
